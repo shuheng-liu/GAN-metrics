@@ -1,7 +1,9 @@
 import os
 import argparse
+import numpy as np
 from PIL import Image
 from datagenerator import ImageDataGenerator
+from stats import MeanStdStats
 
 
 # generate a txt file containing image paths and labels
@@ -107,7 +109,97 @@ def resize_real(dir_raw, dir_new, grid_size=64):
         if img_name.split('.')[-1] not in legal_suffices:
             continue
 
+        # UNDONE img_count undefined
         print('processing real ID: {}, name: {}'.format(img_count, img_name))
         img = Image.open(os.path.join(dir_raw, img_name))
         img_resized = img.resize((grid_size, grid_size), Image.ANTIALIAS)
         img_resized.save(os.path.join(dir_new, img_name))
+
+
+def image2array(img):
+    return np.array(img.getdata()).reshape(img.size[0], img.size[1], 3)
+
+
+def get_mean_std_stats(images, cls=MeanStdStats):
+    """
+    do basic stats over a bunch of images
+    :param images: a 4-D numpy array in the shape of (N, W, H, C); or a list of 3-D arrays
+    :return: a MeanStdStats object with mean and std being 3-D numpy array (W, H, C)
+    """
+
+    mean = np.mean(images, axis=0)
+    std = np.std(images, axis=0)
+    return MeanStdStats(mean=mean, std=std, sample_size=len(images))
+
+
+class Trio:
+    """structured data containing real-fake0-fake1 trios; can be trio of any object or data"""
+
+    def __init__(self, real=None, fake0=None, fake1=None):
+        self._real = real
+        self._fake0 = fake0
+        self._fake1 = fake1
+        self._delta0 = None
+        self._delta1 = None
+        self._abs_delta0 = None
+        self._abs_delta1 = None
+        self.update_absolute_delta()  # which automatically calls self.update_delta()
+
+    def update_delta(self):
+        try:
+            self._delta0 = self._fake0 - self._real
+        except TypeError:
+            self._delta0 = None
+
+        try:
+            self._delta1 = self._fake1 - self._real
+        except TypeError:
+            self._delta1 = None
+
+    def update_absolute_delta(self):
+        self.update_delta()
+        try:
+            self._abs_delta0 = abs(self._delta0)
+        except TypeError:
+            self._abs_delta0 = None
+
+        try:
+            self._abs_delta1 = abs(self._delta1)
+        except TypeError:
+            self._abs_delta1 = None
+
+    def get_delta0(self):
+        return self._delta0
+
+    def get_delta1(self):
+        return self._delta1
+
+    def get_abs_delta0(self):
+        return self._abs_delta0
+
+    def get_abs_delta1(self):
+        return self._abs_delta1
+
+    def get_real(self):
+        return self._real
+
+    def get_fake0(self):
+        return self._fake0
+
+    def get_fake1(self):
+        return self._fake1
+
+    def set_real(self, real):
+        self._real = real
+
+    def set_fake0(self, fake0):
+        self._fake0 = fake0
+
+    def set_fake1(self, fake1):
+        self._fake1 = fake1
+
+    def __iter__(self):
+        return iter([self._real, self._fake0, self._fake1])
+
+    def __len__(self):
+        return 3

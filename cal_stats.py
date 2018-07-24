@@ -4,84 +4,12 @@ import numpy as np
 import pickle as pkl
 from PIL import Image
 from stats import MeanStdStats
+from utils import image2array, get_mean_std_stats, Trio
 
 img_suffices = ["jpg", "jpeg", "png"]
 img_suffices = ["." + suffix for suffix in img_suffices]
 img_suffices.extend([suffix.upper() for suffix in img_suffices])
 print("listing legal suffices", img_suffices)
-
-
-class Trio:
-    """structured data containing real-fake0-fake1 trios; can be trio of any object or data"""
-
-    def __init__(self, real=None, fake0=None, fake1=None):
-        self._real = real
-        self._fake0 = fake0
-        self._fake1 = fake1
-        self._delta0 = None
-        self._delta1 = None
-        self._abs_delta0 = None
-        self._abs_delta1 = None
-        self.update_absolute_delta()  # which automatically calls self.update_delta()
-
-    def update_delta(self):
-        try:
-            self._delta0 = self._fake0 - self._real
-        except TypeError:
-            self._delta0 = None
-
-        try:
-            self._delta1 = self._fake1 - self._real
-        except TypeError:
-            self._delta1 = None
-
-    def update_absolute_delta(self):
-        self.update_delta()
-        try:
-            self._abs_delta0 = abs(self._delta0)
-        except TypeError:
-            self._abs_delta0 = None
-
-        try:
-            self._abs_delta1 = abs(self._delta1)
-        except TypeError:
-            self._abs_delta1 = None
-
-    def get_delta0(self):
-        return self._delta0
-
-    def get_delta1(self):
-        return self._delta1
-
-    def get_abs_delta0(self):
-        return self._abs_delta0
-
-    def get_abs_delta1(self):
-        return self._abs_delta1
-
-    def get_real(self):
-        return self._real
-
-    def get_fake0(self):
-        return self._fake0
-
-    def get_fake1(self):
-        return self._fake1
-
-    def set_real(self, real):
-        self._real = real
-
-    def set_fake0(self, fake0):
-        self._fake0 = fake0
-
-    def set_fake1(self, fake1):
-        self._fake1 = fake1
-
-    def __iter__(self):
-        return iter([self._real, self._fake0, self._fake1])
-
-    def __len__(self):
-        return 3
 
 
 class BatchHandler:
@@ -145,26 +73,10 @@ class BatchHandler:
         self.pools.set_fake1(fake1_pool)
 
     def set_data(self):
-        self.data.set_real(get_stats(self.pools.get_real()))
-        self.data.set_fake0(get_stats(self.pools.get_fake0()))
-        self.data.set_fake1(get_stats(self.pools.get_fake1()))
+        self.data.set_real(get_mean_std_stats(self.pools.get_real()))
+        self.data.set_fake0(get_mean_std_stats(self.pools.get_fake0()))
+        self.data.set_fake1(get_mean_std_stats(self.pools.get_fake1()))
         self.data.update_absolute_delta()
-
-
-def image2array(img):
-    return np.array(img.getdata()).reshape(img.size[0], img.size[1], 3)
-
-
-def get_stats(images, cls=MeanStdStats):
-    """
-    do basic stats over a bunch of images
-    :param images: a 4-D numpy array in the shape of (N, W, H, C); or a list of 3-D arrays
-    :return: a MeanStdStats object with mean and std being 3-D numpy array (W, H, C)
-    """
-
-    mean = np.mean(images, axis=0)
-    std = np.std(images, axis=0)
-    return MeanStdStats(mean=mean, std=std, sample_size=len(images))
 
 
 if __name__ == '__main__':
@@ -211,9 +123,3 @@ if __name__ == '__main__':
             "std0": std0,
             "std1": std1,
         }, f)
-
-    # with open("stats.pkl", "wb") as f:
-    #     pkl.dump(data, f)
-
-    # with open("stats.pkl", "rb") as f:
-    #     data = pkl.load(f)
