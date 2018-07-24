@@ -62,7 +62,7 @@ class BatchHandler:
 
         return np.stack(pool, axis=0)
 
-    def set_pools(self):
+    def update_pools(self):
         real_pool = self.get_pool(self.folders.get_real())
         self.pools.set_real(real_pool)
 
@@ -72,7 +72,7 @@ class BatchHandler:
         fake1_pool = self.get_pool(self.folders.get_fake1())
         self.pools.set_fake1(fake1_pool)
 
-    def set_data(self):
+    def update_data(self):
         self.data.set_real(get_mean_std_stats(self.pools.get_real()))
         self.data.set_fake0(get_mean_std_stats(self.pools.get_fake0()))
         self.data.set_fake1(get_mean_std_stats(self.pools.get_fake1()))
@@ -106,8 +106,8 @@ if __name__ == '__main__':
         fake0_epoch_folder = os.path.join(default_fake0, str(epoch))
         fake1_epoch_folder = os.path.join(default_fake1, str(epoch))
         handler.set_folders(Trio(real_folder, fake0_epoch_folder, fake1_epoch_folder))
-        handler.set_pools()
-        handler.set_data()
+        handler.update_pools()
+        handler.update_data()
 
         data = handler.data
 
