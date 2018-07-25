@@ -45,6 +45,22 @@ class BatchHandler:
                 print("error in folders passed")
                 print(e)
 
+    def update_pools(self):
+        real_pool = self.get_pool(self.folders.get_real())
+        self.pools.set_real(real_pool)
+
+        fake0_pool = self.get_pool(self.folders.get_fake0())
+        self.pools.set_fake0(fake0_pool)
+
+        fake1_pool = self.get_pool(self.folders.get_fake1())
+        self.pools.set_fake1(fake1_pool)
+
+    def update_data(self):
+        self.data.set_real(get_mean_std_stats(self.pools.get_real()))
+        self.data.set_fake0(get_mean_std_stats(self.pools.get_fake0()))
+        self.data.set_fake1(get_mean_std_stats(self.pools.get_fake1()))
+        self.data.update_absolute_delta()
+
     @staticmethod
     def get_pool(folder):
         """
@@ -61,22 +77,6 @@ class BatchHandler:
                     break
 
         return np.stack(pool, axis=0)
-
-    def update_pools(self):
-        real_pool = self.get_pool(self.folders.get_real())
-        self.pools.set_real(real_pool)
-
-        fake0_pool = self.get_pool(self.folders.get_fake0())
-        self.pools.set_fake0(fake0_pool)
-
-        fake1_pool = self.get_pool(self.folders.get_fake1())
-        self.pools.set_fake1(fake1_pool)
-
-    def update_data(self):
-        self.data.set_real(get_mean_std_stats(self.pools.get_real()))
-        self.data.set_fake0(get_mean_std_stats(self.pools.get_fake0()))
-        self.data.set_fake1(get_mean_std_stats(self.pools.get_fake1()))
-        self.data.update_absolute_delta()
 
 
 if __name__ == '__main__':
@@ -96,10 +96,7 @@ if __name__ == '__main__':
 
     handler = BatchHandler((real_folder, fake0_folder, fake1_folder), path_check=False)
 
-    mean0 = list()
-    mean1 = list()
-    std0 = list()
-    std1 = list()
+    mean0, mean1, std0, std1 = list(), list(), list(), list()
 
     for epoch in range(10, 1000, 10):
         print("epoch:", epoch)
