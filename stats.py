@@ -55,16 +55,9 @@ class MeanStdStats(Stats):
         return {"mean": self.mean, "std": self.std}
 
     def set_dict(self, d: dict):
-        if "std" not in d:
-            d["std"] = None
-        if "mean" not in d:
-            d["mean"] = None
-        if "sample_size" not in d:
-            d["sample_size"] = None
-
-        self.std = d["std"]
-        self.mean = d["mean"]
-        self.sample_size = d['sample_size']
+        self.std = d.get("std", None)
+        self.mean = d.get("mean", None)
+        self.sample_size = d.get('sample_size', None)
 
     def __add__(self, other):
         sample_size = self.sample_size + other.sample_size
