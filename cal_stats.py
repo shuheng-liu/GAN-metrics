@@ -23,9 +23,9 @@ class BatchHandler:
         self.data = Trio(MeanStdStats(), MeanStdStats(), MeanStdStats())
 
     def check_path(self):
-        real = self.folders.get_real()
-        fake0 = self.folders.get_fake0()
-        fake1 = self.folders.get_fake1()
+        real = self.folders.real
+        fake0 = self.folders.fake0
+        fake1 = self.folders.fake1
         assert os.path.exists(real), "real folder does not exists {}".format(real)
         assert os.path.exists(fake0), "fake0 folder does not exists {}".format(fake0)
         assert os.path.exists(fake1), "fake1 folder does not exists {}".format(fake1)
@@ -46,19 +46,17 @@ class BatchHandler:
                 print(e)
 
     def update_pools(self):
-        real_pool = self.get_pool(self.folders.get_real())
-        self.pools.set_real(real_pool)
+        real_pool = self.get_pool(self.folders.real)
+        self.pools.real = real_pool
 
-        fake0_pool = self.get_pool(self.folders.get_fake0())
-        self.pools.set_fake0(fake0_pool)
+        fake0_pool = self.get_pool(self.folders.fake0)
+        self.pools.fake0 = fake0_pool
 
-        fake1_pool = self.get_pool(self.folders.get_fake1())
-        self.pools.set_fake1(fake1_pool)
+        fake1_pool = self.get_pool(self.folders.fake1)
+        self.pools.fake1 = fake1_pool
 
     def update_data(self):
-        self.data.set_real(get_mean_std_stats(self.pools.get_real()))
-        self.data.set_fake0(get_mean_std_stats(self.pools.get_fake0()))
-        self.data.set_fake1(get_mean_std_stats(self.pools.get_fake1()))
+        self.data.trio = map(get_mean_std_stats, self.pools.trio)
         self.data.update_absolute_delta()
 
     @staticmethod
@@ -108,10 +106,10 @@ if __name__ == '__main__':
 
         data = handler.data
 
-        mean0.append(np.sum(data.get_abs_delta0().mean))
-        mean1.append(np.sum(data.get_abs_delta1().mean))
-        std0.append(np.sum(data.get_abs_delta0().std))
-        std1.append(np.sum(data.get_abs_delta1().std))
+        mean0.append(np.sum(data.abs_delta0.mean))
+        mean1.append(np.sum(data.abs_delta1.mean))
+        std0.append(np.sum(data.abs_delta0.std))
+        std1.append(np.sum(data.abs_delta1.std))
 
     with open("stats.pkl", "wb") as f:
         pkl.dump({

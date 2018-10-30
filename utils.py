@@ -143,6 +143,7 @@ class Trio:
         self._delta1 = None
         self._abs_delta0 = None
         self._abs_delta1 = None
+        self._to_reset = True
         self.update_absolute_delta()  # which automatically calls self.update_delta()
 
     def update_delta(self):
@@ -156,6 +157,8 @@ class Trio:
         except TypeError:
             self._delta1 = None
 
+        self._to_reset = False
+
     def update_absolute_delta(self):
         self.update_delta()
         try:
@@ -168,38 +171,82 @@ class Trio:
         except TypeError:
             self._abs_delta1 = None
 
-    def get_delta0(self):
+        self._to_reset = False
+
+    @property
+    def delta0(self):
+        if self._to_reset:
+            self.update_delta()
         return self._delta0
 
-    def get_delta1(self):
+    @property
+    def delta1(self):
+        if self._to_reset:
+            self.update_delta()
         return self._delta1
 
-    def get_abs_delta0(self):
+    @property
+    def abs_delta0(self):
+        if self._to_reset:
+            self.update_absolute_delta()
         return self._abs_delta0
 
-    def get_abs_delta1(self):
+    @property
+    def abs_delta1(self):
+        if self._to_reset:
+            self.update_absolute_delta()
         return self._abs_delta1
 
-    def get_real(self):
+    @property
+    def to_reset(self):
+        return self._to_reset
+
+    @property
+    def real(self):
         return self._real
 
-    def get_fake0(self):
+    @property
+    def fake0(self):
         return self._fake0
 
-    def get_fake1(self):
+    @property
+    def fake1(self):
         return self._fake1
 
-    def set_real(self, real):
+    @property
+    def trio(self):
+        return self._real, self.fake0, self.fake1
+
+    @real.setter
+    def real(self, real):
         self._real = real
+        self._to_reset = True
 
-    def set_fake0(self, fake0):
+    @fake0.setter
+    def fake0(self, fake0):
         self._fake0 = fake0
+        self._to_reset = True
 
-    def set_fake1(self, fake1):
+    @fake1.setter
+    def fake1(self, fake1):
         self._fake1 = fake1
+        self._to_reset = True
+
+    @trio.setter
+    def trio(self, tup):
+        self._real, self._fake0, self._fake1 = tup
+        self._to_reset = True
+
+    @to_reset.setter
+    def to_reset(self, value):
+        self._to_reset = value
 
     def __iter__(self):
         return iter([self._real, self._fake0, self._fake1])
 
     def __len__(self):
         return 3
+
+
+if __name__ == '__main__':
+    trio = Trio()
