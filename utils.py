@@ -247,6 +247,12 @@ class Trio:
     def __len__(self):
         return 3
 
+    def __str__(self):
+        return "Trio(real={}, fake0={}, fake1={})".format(self._real, self._fake0, self.fake1)
+
+    def __repr__(self):
+        return "<" + str(self) + " at {}>".format(id(self))
+
 
 if __name__ == '__main__':
     trio = Trio()
