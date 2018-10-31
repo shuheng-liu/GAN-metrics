@@ -2,7 +2,7 @@ output*/
 *images*/
 .idea/
 *test.py
-__pycache__/
+*pyc
 .DS_Store
 .floyd*
 *pkl
