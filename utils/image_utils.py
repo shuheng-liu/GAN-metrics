@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from PIL import Image
-from .. import stats
+from stats import MeanStdStats
 
 
 def crop_folder(dir_raw, dir_new, grid_size=64, margin_size=2):
@@ -69,7 +69,7 @@ def image2array(img):
     return np.array(img.getdata()).reshape(img.size[0], img.size[1], 3)
 
 
-def get_mean_std_stats(images, cls=stats.MeanStdStats):
+def get_mean_std_stats(images, cls=MeanStdStats):
     """
     do basic stats over a bunch of images
     :param images: a 4-D numpy array in the shape of (N, W, H, C); or a list of 3-D arrays
@@ -78,4 +78,4 @@ def get_mean_std_stats(images, cls=stats.MeanStdStats):
 
     mean = np.mean(images, axis=0)
     std = np.std(images, axis=0)
-    return stats.MeanStdStats(mean=mean, std=std, sample_size=len(images))
+    return MeanStdStats(mean=mean, std=std, sample_size=len(images))
