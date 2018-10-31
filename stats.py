@@ -1,18 +1,15 @@
-from abc import abstractmethod
+from abc import ABC
 
 
-class Stats:
-    @abstractmethod
+class Stats(ABC):  # ABC is base for abstract classes to inherit from
     @property
     def dict(self):
         pass
 
-    @abstractmethod
     @dict.setter
     def dict(self, d: dict):
         pass
 
-    @abstractmethod
     def extend(self, other):
         pass
 
