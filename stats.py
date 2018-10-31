@@ -3,11 +3,13 @@ from abc import abstractmethod
 
 class Stats:
     @abstractmethod
-    def get_dict(self):
+    @property
+    def dict(self):
         pass
 
     @abstractmethod
-    def set_dict(self, d: dict):
+    @dict.setter
+    def dict(self, d: dict):
         pass
 
     @abstractmethod
@@ -17,58 +19,64 @@ class Stats:
 
 class MeanStdStats(Stats):
     def __init__(self, mean=None, std=None, sample_size=1):
-        self.mean = mean
-        self.std = std
-        self.sample_size = sample_size
+        self._mean = mean
+        self._std = std
+        self._sample_size = sample_size
 
     def __eq__(self, other):
-        return self.mean == other.mean and self.std == other.mean
+        return self._mean == other.mean and self._std == other.mean
 
     def __sub__(self, other):
-        if self.sample_size != other.sample_size:
+        if self._sample_size != other.sample_size:
             return None
 
-        sample_size = self.sample_size
-        mean = self.mean - other.mean
-        std = self.std - other.std
+        sample_size = self._sample_size
+        mean = self._mean - other.mean
+        std = self._std - other.std
         return MeanStdStats(mean=mean, std=std, sample_size=sample_size)
 
     def __neg__(self):
-        return MeanStdStats(mean=-self.mean, std=-self.std, sample_size=self.sample_size)
+        return MeanStdStats(mean=-self._mean, std=-self._std, sample_size=self._sample_size)
 
     def __abs__(self):
-        return MeanStdStats(mean=abs(self.mean), std=abs(self.std), sample_size=self.sample_size)
+        return MeanStdStats(mean=abs(self._mean), std=abs(self._std), sample_size=self._sample_size)
 
-    def get_std(self):
-        return self.std
+    @property
+    def std(self):
+        return self._std
 
-    def get_mean(self):
-        return self.mean
+    @property
+    def mean(self):
+        return self._mean
 
-    def set_std(self, std):
-        self.std = std
+    @std.setter
+    def std(self, std):
+        self._std = std
 
-    def set_mean(self, mean):
-        self.mean = mean
+    @mean.setter
+    def mean(self, mean):
+        self._mean = mean
 
-    def get_dict(self):
-        return {"mean": self.mean, "std": self.std}
+    @property
+    def dict(self):
+        return {"mean": self._mean, "std": self._std}
 
-    def set_dict(self, d: dict):
-        self.std = d.get("std", None)
-        self.mean = d.get("mean", None)
-        self.sample_size = d.get('sample_size', None)
+    @dict.setter
+    def dict(self, d: dict):
+        self._std = d.get("std", None)
+        self._mean = d.get("mean", None)
+        self._sample_size = d.get('sample_size', None)
 
     def __add__(self, other):
-        sample_size = self.sample_size + other.sample_size
+        sample_size = self._sample_size + other.sample_size
         try:
-            mean = (self.mean * self.sample_size + other.mean * other.sample_size) / sample_size
+            mean = (self._mean * self._sample_size + other.mean * other.sample_size) / sample_size
         except ValueError:
             print("force setting mean to None")
             mean = None
 
         try:
-            std = (self.std * self.sample_size + other.std + other.sample_size) / sample_size
+            std = (self._std * self._sample_size + other.std + other.sample_size) / sample_size
         except ValueError:
             print("force setting std to None")
             std = None
@@ -84,8 +92,8 @@ class MeanStdStats(Stats):
             print("Aborting")
             return
 
-        self.mean = self.mean * self.sample_size + other.mean * other.sample_size
-        self.std = self.std * self.sample_size + other.std * other.sample_size
-        self.sample_size += other.sample_size
-        self.mean /= self.sample_size
-        self.std /= self.sample_size
+        self._mean = self._mean * self._sample_size + other._mean * other._sample_size
+        self._std = self._std * self._sample_size + other._std * other._sample_size
+        self._sample_size += other._sample_size
+        self._mean /= self._sample_size
+        self._std /= self._sample_size
