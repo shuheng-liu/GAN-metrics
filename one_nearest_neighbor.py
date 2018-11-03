@@ -125,6 +125,7 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
         self.session.run(tf.global_variables_initializer())
         self._alexnet.load_model_pretrained(self.session)
 
+    @property
     def alexnet(self):
         if self._alexnet is None:
             self._set_default_alexnet()
