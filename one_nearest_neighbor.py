@@ -95,7 +95,7 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
         NaiveOneNearestNeighborScorer.__init__(self, folder_real, folder_generated, session, dump_dir)
         if alexnet is None:
             self._alexnet = None  # declare field in constructor to avoid warnings
-            self._set_alexnet()
+            self._set_default_alexnet()
         else:
             self._alexnet = alexnet
 
@@ -115,16 +115,19 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
         image_batch, label_batch = self.session.run(next_batch)
         self._latent = self.session.run(latent_tsr, feed_dict={x_tsr: image_batch, keep_prob_tsr: keep_prob})
 
-    def _set_alexnet(self):
+    def _set_default_alexnet(self):
         x_tsr = tf.placeholder(tf.float32, [None, 227, 227, 3])
         keep_prob_tsr = tf.placeholder(tf.float32, tuple())
         num_classes = 2
         train_layers = ['fc8']
         self._alexnet = AlexNet(x_tsr, keep_prob_tsr, num_classes, train_layers)
+        # load model
+        self.session.run(tf.global_variables_initializer())
+        self._alexnet.load_model_pretrained(self.session)
 
     def alexnet(self):
         if self._alexnet is None:
-            self._set_alexnet()
+            self._set_default_alexnet()
         return self._alexnet
 
 
