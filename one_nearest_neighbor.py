@@ -1,7 +1,7 @@
 import os
 import tensorflow as tf
 import numpy as np
-from alexnet import AlexNet
+from cnn.alexnet import AlexNet
 from tensorflow.contrib.data import Iterator
 from tensorflow.python.client.session import BaseSession
 from utils import make_list, get_init_op
