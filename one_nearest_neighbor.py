@@ -9,6 +9,33 @@ from datagenerator import ImageDataGenerator
 from scipy.spatial.distance import cdist
 
 
+class OneNearestNeighborScorer:
+    def __init__(self, folder_real, folder_generated, sess, dump_dir):
+        self.folder0 = folder_real
+        self.folder1 = folder_generated
+        self.session = sess
+        self.dump_dir = dump_dir
+
+    def _make_dump_dir(self):
+        try:
+            os.makedirs(dump_dir)
+        except FileExistsError as e:
+            print(e)
+            print("abort making dir")
+
+    def get_latent(self):
+        pass
+
+    def get_pair_dist(self):
+        pass
+
+    def get_argmin(self):
+        pass
+
+    def get_score(self):
+        pass
+
+
 def get_naive_latent_from_folders(real_folder, generated_folder, sess, dump_dir, reuse=False):
     latent_path = os.path.join(dump_dir, "latent.pkl")
     if reuse and os.path.isfile(latent_path):
