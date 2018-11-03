@@ -138,23 +138,3 @@ if __name__ == '__main__':
 
     real_folder = "images/real-images/"
     reuse = True
-
-    without_mute_layer = []
-    for epoch in range(10, 1001, 10):
-        print("%.1f percent completed" % (epoch / 20))
-        generated_folder = "images/fake-images-97/%d" % epoch
-        dump_dir = "naive-output-euclid/output-97/%d" % epoch
-        score = get_score_from_folder(real_folder, generated_folder, alexnet,
-                                      sess, dump_dir, reuse=reuse, naive=True)
-        without_mute_layer.append(score)
-    print(without_mute_layer)
-
-    with_mute_layer = []
-    for epoch in range(10, 1001, 10):t
-        print("%.1f percent completed" % (epoch / 20 + 50))
-        generated_folder = "images/fake-images-120/%d" % epoch
-        dump_dir = "naive-output-euclid/output-120/%d" % epoch
-        score = get_score_from_folder(real_folder, generated_folder, alexnet,
-                                      sess, dump_dir, reuse=reuse, naive=True)
-        with_mute_layer.append(score)
-    print(with_mute_layer)
