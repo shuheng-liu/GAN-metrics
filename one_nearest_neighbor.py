@@ -1,7 +1,6 @@
 import os
 import tensorflow as tf
 import numpy as np
-import pickle as pkl
 from alexnet import AlexNet
 from tensorflow.contrib.data import Iterator
 from tensorflow.python.client.session import BaseSession
