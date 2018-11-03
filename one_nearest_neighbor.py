@@ -38,7 +38,7 @@ class NaiveOneNearestNeighborScorer:
         init_op = get_init_op(iterator, data)
 
         self.session.run(init_op)
-        image_batch, label_batch = sess.run(next_batch)
+        image_batch, label_batch = self.session.run(next_batch)
         # reshape the latent numpy array
         self._latent = np.reshape(image_batch, [image_batch.shape[0], -1])
 
@@ -112,8 +112,8 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
         keep_prob = 1.0
 
         self.session.run(init_op)
-        image_batch, label_batch = sess.run(next_batch)
-        self._latent = sess.run(latent_tsr, feed_dict={x_tsr: image_batch, keep_prob_tsr: keep_prob})
+        image_batch, label_batch = self.session.run(next_batch)
+        self._latent = self.session.run(latent_tsr, feed_dict={x_tsr: image_batch, keep_prob_tsr: keep_prob})
 
     def _set_alexnet(self):
         x_tsr = tf.placeholder(tf.float32, [None, 227, 227, 3])
