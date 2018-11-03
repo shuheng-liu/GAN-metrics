@@ -43,12 +43,11 @@ class OneNearestNeighborScorer:
         # reshape the latent numpy array
         self._latent = np.reshape(image_batch, [image_batch.shape[0], -1])
 
-    def get_latent(self):
+    @property
+    def latent(self):
         if self._latent is None:
             self._set_latent()
         return self._latent
-
-    latent = property(get_latent)
 
     def _set_pair_dist(self):
         if self._latent is None:
@@ -56,24 +55,22 @@ class OneNearestNeighborScorer:
         self._pair_dist = cdist(self._latent, self._latent, metric="euclidean")
         np.fill_diagonal(self._pair_dist, np.inf)
 
-    def get_pair_dist(self):
+    @property
+    def pair_dist(self):
         if self._pair_dist is None:
             self._set_pair_dist()
         return self._pair_dist
-
-    pair_dist = property(get_pair_dist)
 
     def _set_argmin(self):
         if self._pair_dist is None:
             self._set_pair_dist()
         self._argmin = self._pair_dist.argmin[0]
 
-    def get_argmin(self):
+    @property
+    def argmin(self):
         if self._argmin is None:
             self._set_argmin()
         return self._argmin
-
-    argmin = property(get_argmin)
 
     def _set_score(self):
         if self._argmin is None:
@@ -82,12 +79,11 @@ class OneNearestNeighborScorer:
         total = sum(1 for k in range(length) if (k < length / 2) == (self._argmin[k] < length / 2))
         self._score = total / length
 
-    def get_score(self):
+    @property
+    def score(self):
         if self._score is None:
             self._set_score()
         return self._score
-
-    score = property(get_score)
 
 
 def get_naive_latent_from_folders(real_folder, generated_folder, sess, dump_dir, reuse=False):
