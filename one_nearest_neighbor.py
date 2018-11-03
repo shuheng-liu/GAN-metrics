@@ -15,6 +15,10 @@ class OneNearestNeighborScorer:
         self.folder1 = folder_generated
         self.session = sess
         self.dump_dir = dump_dir
+        self._latent = None
+        self._pair_dist = None
+        self._argmin = None
+        self._score = None
 
     def _make_dump_dir(self):
         try:
@@ -24,16 +28,24 @@ class OneNearestNeighborScorer:
             print("abort making dir")
 
     def get_latent(self):
-        pass
+        return self._latent
+
+    latent = property(get_latent)
 
     def get_pair_dist(self):
-        pass
+        return self._pair_dist
+
+    pair_dist = property(get_pair_dist)
 
     def get_argmin(self):
-        pass
+        return self._argmin
+
+    argmin = property(get_argmin)
 
     def get_score(self):
-        pass
+        return self._score
+
+    score = property(get_score)
 
 
 def get_naive_latent_from_folders(real_folder, generated_folder, sess, dump_dir, reuse=False):
