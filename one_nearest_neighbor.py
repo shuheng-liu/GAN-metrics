@@ -10,7 +10,7 @@ from datagenerator import ImageDataGenerator
 from scipy.spatial.distance import cdist
 
 
-class OneNearestNeighborScorer:
+class NaiveOneNearestNeighborScorer:
     def __init__(self, folder_real, folder_generated, session: BaseSession, dump_dir):
         self.folder0 = folder_real
         self.folder1 = folder_generated
