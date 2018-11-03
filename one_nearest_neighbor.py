@@ -15,7 +15,7 @@ class NaiveOneNearestNeighborScorer:
         self.folder0 = folder_real
         self.folder1 = folder_generated
         self.session = session
-        self.dump_dir = os.path.join(dump_dir, self.__class__.__name__)
+        self.dump_dir = dump_dir
         self._make_dump_dir()
         self._latent = None
         self._pair_dist = None
@@ -83,6 +83,11 @@ class NaiveOneNearestNeighborScorer:
         if self._score is None:
             self._set_score()
         return self._score
+
+    def dump(self):
+        dump_path = os.path.join(self.dump_dir, self.__class__.__name__)
+        with open(dump_path, "wb") as f:
+            pkl.dump(self, f)
 
 
 class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
