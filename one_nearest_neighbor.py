@@ -54,6 +54,7 @@ class OneNearestNeighborScorer:
         if self._latent is None:
             self._set_latent()
         self._pair_dist = cdist(self._latent, self._latent, metric="euclidean")
+        np.fill_diagonal(self._pair_dist, np.inf)
 
     def get_pair_dist(self):
         if self._pair_dist is None:
