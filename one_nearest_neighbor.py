@@ -86,6 +86,37 @@ class NaiveOneNearestNeighborScorer:
         return self._score
 
 
+class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
+    def __int__(self, folder_real, folder_generated, session: BaseSession, dump_dir, alexnet=None):
+        super(AlexNetOneNearestNeighborScorer, self).__int__(folder_real, folder_generated, session, dump_dir)
+        self._alexnet = None  # declare field in constructor to avoid warnings
+        self._set_alexnet()
+
+    def _set_latent(self):
+        txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dump_dir)
+        print(txt_path, length)
+        data = ImageDataGenerator(txt_path, 'inference', length, 2, shuffle=False)  # Do not shuffle the dataset
+        iterator = Iterator.from_structure(data.data.output_types, data.data.output_shapes)  # type: Iterator
+        next_batch = iterator.get_next()
+        init_op = get_init_op(iterator, data)
+
+        # get the latent_tsr representation of each sample
+        latent_tsr = alexnet.flattened
+        keep_prob = 1.0
+
+        self.session.run(init_op)
+        image_batch, label_batch = sess.run(next_batch)
+        self._latent = sess.run(latent_tsr, feed_dict={x_tsr: image_batch, keep_prob_tsr: keep_prob})
+
+    def _set_alexnet(self):
+        pass
+
+    def alexnet(self):
+        if self._alexnet is None:
+            self._set_alexnet()
+        return self._alexnet
+
+
 def get_naive_latent_from_folders(real_folder, generated_folder, sess, dump_dir, reuse=False):
     latent_path = os.path.join(dump_dir, "latent.pkl")
     if reuse and os.path.isfile(latent_path):
