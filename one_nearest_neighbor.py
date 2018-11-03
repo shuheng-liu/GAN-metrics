@@ -11,26 +11,26 @@ from scipy.spatial.distance import cdist
 
 
 class NaiveOneNearestNeighborScorer:
-    def __init__(self, folder_real, folder_generated, session: BaseSession, dump_dir):
+    def __init__(self, folder_real, folder_generated, session: BaseSession, dir_for_list):
         self.folder0 = folder_real
         self.folder1 = folder_generated
         self.session = session
-        self.dump_dir = dump_dir
-        self._make_dump_dir()
+        self.dir_for_list = dir_for_list
+        self._make_dir_for_list()
         self._latent = None
         self._pair_dist = None
         self._argmin = None
         self._score = None
 
-    def _make_dump_dir(self):
+    def _make_dir_for_list(self):
         try:
-            os.makedirs(self.dump_dir)
+            os.makedirs(self.dir_for_list)
         except FileExistsError as e:
             print(e)
             print("abort making dir")
 
     def _set_latent(self):
-        txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dump_dir)
+        txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dir_for_list)
         print(txt_path, length)
         data = ImageDataGenerator(txt_path, 'inference', length, 2, shuffle=False)  # Do not shuffle the dataset
         iterator = Iterator.from_structure(data.data.output_types, data.data.output_shapes)  # type: Iterator
@@ -84,15 +84,10 @@ class NaiveOneNearestNeighborScorer:
             self._set_score()
         return self._score
 
-    def dump(self):
-        dump_path = os.path.join(self.dump_dir, self.__class__.__name__)
-        with open(dump_path, "wb") as f:
-            pkl.dump(self, f)
-
 
 class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
-    def __int__(self, folder_real, folder_generated, session: BaseSession, dump_dir, alexnet=None):
-        NaiveOneNearestNeighborScorer.__init__(self, folder_real, folder_generated, session, dump_dir)
+    def __int__(self, folder_real, folder_generated, session: BaseSession, dir_for_list, alexnet=None):
+        NaiveOneNearestNeighborScorer.__init__(self, folder_real, folder_generated, session, dir_for_list)
         if alexnet is None:
             self._alexnet = None  # declare field in constructor to avoid warnings
             self._set_default_alexnet()
@@ -100,7 +95,7 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
             self._alexnet = alexnet
 
     def _set_latent(self):
-        txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dump_dir)
+        txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dir_for_list)
         print(txt_path, length)
         data = ImageDataGenerator(txt_path, 'inference', length, 2, shuffle=False)  # Do not shuffle the dataset
         iterator = Iterator.from_structure(data.data.output_types, data.data.output_shapes)  # type: Iterator
