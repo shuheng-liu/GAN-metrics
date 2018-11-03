@@ -97,7 +97,7 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
             self._alexnet = None  # declare field in constructor to avoid warnings
             self._set_alexnet()
         else:
-            self.alexnet = alexnet
+            self._alexnet = alexnet
 
     def _set_latent(self):
         txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dump_dir)
