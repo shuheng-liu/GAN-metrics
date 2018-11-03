@@ -88,7 +88,7 @@ class NaiveOneNearestNeighborScorer:
 
 class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
     def __int__(self, folder_real, folder_generated, session: BaseSession, dump_dir, alexnet=None):
-        super(AlexNetOneNearestNeighborScorer, self).__int__(folder_real, folder_generated, session, dump_dir)
+        NaiveOneNearestNeighborScorer.__init__(self, folder_real, folder_generated, session, dump_dir)
         if alexnet is None:
             self._alexnet = None  # declare field in constructor to avoid warnings
             self._set_alexnet()
