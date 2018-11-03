@@ -89,8 +89,11 @@ class NaiveOneNearestNeighborScorer:
 class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
     def __int__(self, folder_real, folder_generated, session: BaseSession, dump_dir, alexnet=None):
         super(AlexNetOneNearestNeighborScorer, self).__int__(folder_real, folder_generated, session, dump_dir)
-        self._alexnet = None  # declare field in constructor to avoid warnings
-        self._set_alexnet()
+        if alexnet is None:
+            self._alexnet = None  # declare field in constructor to avoid warnings
+            self._set_alexnet()
+        else:
+            self.alexnet = alexnet
 
     def _set_latent(self):
         txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dump_dir)
@@ -109,115 +112,16 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
         self._latent = sess.run(latent_tsr, feed_dict={x_tsr: image_batch, keep_prob_tsr: keep_prob})
 
     def _set_alexnet(self):
-        pass
+        x_tsr = tf.placeholder(tf.float32, [None, 227, 227, 3])
+        keep_prob_tsr = tf.placeholder(tf.float32, tuple())
+        num_classes = 2
+        train_layers = ['fc8']
+        self._alexnet = AlexNet(x_tsr, keep_prob_tsr, num_classes, train_layers)
 
     def alexnet(self):
         if self._alexnet is None:
             self._set_alexnet()
         return self._alexnet
-
-
-def get_naive_latent_from_folders(real_folder, generated_folder, sess, dump_dir, reuse=False):
-    latent_path = os.path.join(dump_dir, "latent.pkl")
-    if reuse and os.path.isfile(latent_path):
-        with open(latent_path, "rb") as f:
-            latent = pkl.load(f)
-    else:
-        txt_path, length = make_list([real_folder, generated_folder], [1, 0], [-1, -1], 'val', dump_dir)
-        print(txt_path, length)
-        data = ImageDataGenerator(txt_path, 'inference', length, 2, shuffle=False)  # Do not shuffle the dataset
-        iterator = Iterator.from_structure(data.data.output_types, data.data.output_shapes)  # type: Iterator
-        next_batch = iterator.get_next()
-        init_op = get_init_op(iterator, data)
-
-        sess.run(init_op)
-        image_batch, label_batch = sess.run(next_batch)
-        # reshape the latent numpy array
-        latent = np.reshape(image_batch, [image_batch.shape[0], -1])
-
-        # dump the representation on disk
-        with open(latent_path, "wb") as f:
-            pkl.dump(latent, f)
-
-    return latent
-
-
-def get_latent_from_folders(real_folder, generated_folder, alexnet, sess, dump_dir, reuse=False):
-    latent_path = os.path.join(dump_dir, "latent.pkl")
-    if reuse and os.path.isfile(latent_path):
-        with open(latent_path, "rb") as f:
-            latent = pkl.load(f)
-    else:
-        # get the real samples and generated samples
-        txt_path, length = make_list([real_folder, generated_folder], [1, 0], [-1, -1], 'val', dump_dir)
-        print(txt_path, length)
-        data = ImageDataGenerator(txt_path, 'inference', length, 2, shuffle=False)  # Do not shuffle the dataset
-        iterator = Iterator.from_structure(data.data.output_types, data.data.output_shapes)  # type: Iterator
-        next_batch = iterator.get_next()
-        init_op = get_init_op(iterator, data)
-
-        # get the latent_tsr representation of each sample
-        latent_tsr = alexnet.flattened
-        keep_prob = 1.0
-
-        sess.run(init_op)
-        image_batch, label_batch = sess.run(next_batch)
-        latent = sess.run(latent_tsr, feed_dict={x_tsr: image_batch, keep_prob_tsr: keep_prob})
-
-        # dump the representation on disk
-        with open(latent_path, "wb") as f:
-            pkl.dump(latent, f)
-
-    return latent
-
-
-def get_pair_dist_from_latent(latent, dump_dir, reuse=False):
-    # get the pair-wise distance and dump it
-    pair_path = os.path.join(dump_dir, "pair_dist.pkl")
-    if reuse and os.path.isfile(pair_path):
-        with open(pair_path, "rb") as f:
-            pair_dist = pkl.load(f)
-    else:
-        pair_dist = cdist(latent, latent, metric="euclidean")
-        with open(pair_path, "wb") as f:
-            pkl.dump(pair_dist, f)
-
-    return pair_dist
-
-
-def get_argmin_from_pair_dist(pair_dist, dump_dir, reuse=False):
-    # get the Leave One Out 1-NN result and dump it
-    argmin_path = os.path.join(dump_dir, "argmin.pkl")
-    if reuse and os.path.isfile(argmin_path):
-        with open(argmin_path, "rb") as f:
-            argmin = pkl.load(f)
-    else:
-        np.fill_diagonal(pair_dist, np.inf)
-        argmin = pair_dist.argmin(0)
-        with open(argmin_path, "wb") as f:
-            pkl.dump(argmin, f)
-    return argmin
-
-
-def get_score_from_argmin(argmin):
-    length = len(argmin)  # in case length is not defined
-    total = sum(1 for k in range(length) if (k < length / 2) == (argmin[k] < length / 2))
-    return total / length
-
-
-def get_score_from_folder(real_folder, generated_folder, alexnet, sess, dump_dir, reuse=False, naive=False):
-    try:
-        os.makedirs(dump_dir)
-    except FileExistsError:
-        pass
-    if naive:
-        latent = get_naive_latent_from_folders(real_folder, generated_folder, sess, dump_dir, reuse=reuse)
-    else:
-        latent = get_latent_from_folders(real_folder, generated_folder, alexnet, sess, dump_dir, reuse=reuse)
-    pair_dist = get_pair_dist_from_latent(latent, dump_dir, reuse=reuse)
-    argmin = get_argmin_from_pair_dist(pair_dist, dump_dir, reuse=reuse)
-    score = get_score_from_argmin(argmin)
-    return score
 
 
 if __name__ == '__main__':
