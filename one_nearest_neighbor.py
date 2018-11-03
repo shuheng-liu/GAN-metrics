@@ -4,16 +4,17 @@ import numpy as np
 import pickle as pkl
 from alexnet import AlexNet
 from tensorflow.contrib.data import Iterator
+from tensorflow.python.client.session import BaseSession
 from utils import make_list, get_init_op
 from datagenerator import ImageDataGenerator
 from scipy.spatial.distance import cdist
 
 
 class OneNearestNeighborScorer:
-    def __init__(self, folder_real, folder_generated, sess, dump_dir):
+    def __init__(self, folder_real, folder_generated, session: BaseSession, dump_dir):
         self.folder0 = folder_real
         self.folder1 = folder_generated
-        self.session = sess
+        self.session = session
         self.dump_dir = dump_dir
         self.latent_path = os.path.join(dump_dir, "latent.pkl")
         self._make_dump_dir()
@@ -29,7 +30,22 @@ class OneNearestNeighborScorer:
             print(e)
             print("abort making dir")
 
+    def _set_latent(self):
+        txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dump_dir)
+        print(txt_path, length)
+        data = ImageDataGenerator(txt_path, 'inference', length, 2, shuffle=False)  # Do not shuffle the dataset
+        iterator = Iterator.from_structure(data.data.output_types, data.data.output_shapes)  # type: Iterator
+        next_batch = iterator.get_next()
+        init_op = get_init_op(iterator, data)
+
+        self.session.run(init_op)
+        image_batch, label_batch = sess.run(next_batch)
+        # reshape the latent numpy array
+        self._latent = np.reshape(image_batch, [image_batch.shape[0], -1])
+
     def get_latent(self):
+        if self._latent is None:
+            self._set_latent()
         return self._latent
 
     latent = property(get_latent)
@@ -44,10 +60,12 @@ class OneNearestNeighborScorer:
 
     argmin = property(get_argmin)
 
-    def get_score(self):
-        return self._score
 
-    score = property(get_score)
+def get_score(self):
+    return self._score
+
+
+score = property(get_score)
 
 
 def get_naive_latent_from_folders(real_folder, generated_folder, sess, dump_dir, reuse=False):
