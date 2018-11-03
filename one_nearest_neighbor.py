@@ -75,12 +75,19 @@ class OneNearestNeighborScorer:
 
     argmin = property(get_argmin)
 
+    def _set_score(self):
+        if self._argmin is None:
+            self._set_argmin()
+        length = len(self._argmin)
+        total = sum(1 for k in range(length) if (k < length / 2) == (self._argmin[k] < length / 2))
+        self._score = total / length
 
-def get_score(self):
-    return self._score
+    def get_score(self):
+        if self._score is None:
+            self._set_score()
+        return self._score
 
-
-score = property(get_score)
+    score = property(get_score)
 
 
 def get_naive_latent_from_folders(real_folder, generated_folder, sess, dump_dir, reuse=False):
