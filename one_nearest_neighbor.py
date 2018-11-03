@@ -15,8 +15,7 @@ class NaiveOneNearestNeighborScorer:
         self.folder0 = folder_real
         self.folder1 = folder_generated
         self.session = session
-        self.dump_dir = dump_dir
-        self.latent_path = os.path.join(dump_dir, "latent.pkl")
+        self.dump_dir = os.path.join(dump_dir, self.__class__.__name__)
         self._make_dump_dir()
         self._latent = None
         self._pair_dist = None
