@@ -63,7 +63,14 @@ class OneNearestNeighborScorer:
 
     pair_dist = property(get_pair_dist)
 
+    def _set_argmin(self):
+        if self._pair_dist is None:
+            self._set_pair_dist()
+        self._argmin = self._pair_dist.argmin[0]
+
     def get_argmin(self):
+        if self._argmin is None:
+            self._set_argmin()
         return self._argmin
 
     argmin = property(get_argmin)
