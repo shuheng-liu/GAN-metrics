@@ -50,7 +50,14 @@ class OneNearestNeighborScorer:
 
     latent = property(get_latent)
 
+    def _set_pair_dist(self):
+        if self._latent is None:
+            self._set_latent()
+        self._pair_dist = cdist(self._latent, self._latent, metric="euclidean")
+
     def get_pair_dist(self):
+        if self._pair_dist is None:
+            self._set_pair_dist()
         return self._pair_dist
 
     pair_dist = property(get_pair_dist)
