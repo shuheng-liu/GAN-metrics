@@ -15,6 +15,8 @@ class OneNearestNeighborScorer:
         self.folder1 = folder_generated
         self.session = sess
         self.dump_dir = dump_dir
+        self.latent_path = os.path.join(dump_dir, "latent.pkl")
+        self._make_dump_dir()
         self._latent = None
         self._pair_dist = None
         self._argmin = None
@@ -22,7 +24,7 @@ class OneNearestNeighborScorer:
 
     def _make_dump_dir(self):
         try:
-            os.makedirs(dump_dir)
+            os.makedirs(self.dump_dir)
         except FileExistsError as e:
             print(e)
             print("abort making dir")
