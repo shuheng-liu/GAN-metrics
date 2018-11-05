@@ -9,6 +9,10 @@ class BaseScorer(ABC):
     @property
     @abstractmethod
     def score(self):
+        """
+        returns the score of one GAN computed against ground truths
+        :rtype: float
+        """
         pass
 
 
