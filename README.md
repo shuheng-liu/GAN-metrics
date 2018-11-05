@@ -1,8 +1,8 @@
 # Scoring the performance of GANs
-This project is meant for evaluating the performance of a GAN (Generative Adversarial Network). 
+This project is meant for evaluating GAN performances (Generative Adversarial Network). 
 
 # Features Supported
-- Scoring the performance of GAN with these metrics:
+- Scoring GAN performances with these metrics:
     * Inception Score [to be completed]
     * 1-NN (One Nearset Neighbor) Score [basically done]
     * MAE (Mean Average Error) of pixel-wise color std and mean [basically done]
