@@ -1,6 +1,9 @@
 # Scoring the performance of GANs
 This project is meant for evaluating GAN performances (Generative Adversarial Network). 
 
+# Dependency
+Make sure to run the project with Python 3.3 or greater.
+For those interested in Inception Scores and 1-NN Score with AlexNet, lateset version of tensorflow is need.
 # Features Supported
 - Scoring GAN performances with these metrics:
     * [Inception Score](https://arxiv.org/pdf/1801.01973.pdf)[to be completed]
