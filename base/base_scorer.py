@@ -28,3 +28,7 @@ class BaseBinaryScorer:
     @property
     def score2(self):
         return self.scorer2.score
+
+    @property
+    def scores(self):
+        return self.scorer1, self.scorer2
