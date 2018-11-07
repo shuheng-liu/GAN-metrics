@@ -12,4 +12,10 @@ class Duo:
     def fake(self):
         return self._fake
 
-    
+    @real.setter
+    def real(self, real):
+        self._real = real
+
+    @fake.setter
+    def fake(self, fake):
+        self._fake = fake
