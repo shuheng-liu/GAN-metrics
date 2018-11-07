@@ -106,6 +106,7 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
         NaiveOneNearestNeighborScorer._set_latent(self)
         # self._latent = some_input_images in np.array format
 
+        # TODO allow for specifying which latent layer to use, default using `flattened`, i.e., the layer after conv5
         # grab the latent_tsr representation of each sample
         latent_tsr = self._alexnet.flattened
 
@@ -116,6 +117,7 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
                 self._alexnet.KEEP_PROB: 1.0,
             }
         )
+        # in case latent_tsr is not flattened
         self._latent = self._flatten(self._latent)
 
     def _set_default_alexnet(self):
