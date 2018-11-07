@@ -81,7 +81,7 @@ class Trio:
 
     @property
     def trio(self):
-        return self._real, self.fake0, self.fake1
+        return self._real, self._fake0, self._fake1
 
     @real.setter
     def real(self, real):
