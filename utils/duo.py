@@ -85,6 +85,13 @@ class Duo:
         except TypeError as e:
             print(e)
             return 0
+
+    def __str__(self):
+        return "Duo(real={}, fake={})".format(self._real, self._fake)
+
+    def __repr__(self):
+        return "<" + str(self) + " at {}>".format(id(self))
+
     
 
 
