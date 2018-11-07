@@ -111,7 +111,12 @@ class Trio:
         return iter([self._real, self._fake0, self._fake1])
 
     def __len__(self):
-        return 3
+        try:
+            return len(self._real) + len(self._fake0) + len(self._fake1)
+        except TypeError as e:
+            print(e)
+            print("falling back to default length 0 for {}".format(self))
+            return 0
 
     def __str__(self):
         return "Trio(real={}, fake0={}, fake1={})".format(self._real, self._fake0, self.fake1)
