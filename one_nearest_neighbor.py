@@ -8,31 +8,41 @@ from utils import make_list, get_init_op
 from datagenerator import ImageDataGenerator
 from scipy.spatial.distance import cdist
 from PIL.Image import Image
+from base import BaseScorer
 
 
-class NaiveOneNearestNeighborScorer:
-    def __init__(self, images, dir_for_list):
+class NaiveOneNearestNeighborScorer(BaseScorer):
+    def __init__(self, images_real, images_fake, dir_for_list):
         self.dir_for_list = dir_for_list
-        self._images = images
+        self._images0 = images_fake
+        self._images1 = images_real
         self._latent = None
         self._pair_dist = None
         self._argmin = None
         self._score = None
 
-    def _set_latent(self):
-        if isinstance(self._images, np.ndarray):
-            self._latent = np.reshape(self._images, [len(self._images), -1])
-        elif isinstance(self._images, (list, tuple)):
+    @classmethod
+    def _convert_latent(cls, images):
+        if isinstance(images, np.ndarray):
+            return np.reshape(images, [len(images), -1])
+        elif isinstance(images, (list, tuple)):
             try:
-                if isinstance(self._images[0], Image):
-                    self._latent = np.stack(np.reshape(np.asarray(img), -1) for img in self._images)
+                if isinstance(images[0], Image):
+                    return np.stack(np.reshape(np.asarray(img), -1) for img in images)
                 else:
-                    self._latent = np.stack(np.reshape(img, -1) for img in self._images)
+                    return np.stack(np.reshape(img, -1) for img in images)
             except IndexError as e:
-                print("check that `images` of {} is not empty".format(self.__class__.__name__))
+                print("check that `images` of {} is not empty".format(cls.__name__))
                 raise e
         else:
-            raise TypeError("unsupported input format {}".format(type(self._images)))
+            raise TypeError("unsupported input format {}".format(type(images)))
+
+    def _set_latent(self):
+        latent0 = self._convert_latent(self._images0)
+        latent1 = self._convert_latent(self._images1)
+        if latent0.shape != latent1.shape:
+            raise ValueError("real and fake latents differ in shape {} != {}".format(latent0.shape, latent1.shape))
+        self._latent = np.concatenate([latent0, latent1])
 
     @property
     def latent(self):
