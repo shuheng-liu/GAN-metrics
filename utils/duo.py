@@ -43,6 +43,7 @@ class Duo:
             print(e)
             self._delta = None
             print("assigning `delta` of {} to {}".format(self, self._delta))
+        self._to_reset = False
 
     def _set_abs_delta(self):
         try:
@@ -51,6 +52,7 @@ class Duo:
             print(e)
             self._abs_delta = None
             print("assigning `abs_delta` of {} to {}".format(self, self._abs_delta))
+        self._to_reset = False
 
     @property
     def to_reset(self):
