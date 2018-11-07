@@ -52,3 +52,13 @@ class Duo:
             self._abs_delta = None
             print("assigning `abs_delta` of {} to {}".format(self, self._abs_delta))
 
+    @property
+    def to_reset(self):
+        return self._to_reset
+
+    @to_reset.setter
+    def to_reset(self, value):
+        if not value:
+            print("Warning: manually overriding resetting procedure")
+        self._to_reset = value
+
