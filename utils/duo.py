@@ -1,3 +1,6 @@
+from itertools import chain
+
+
 class Duo:
     def __init__(self, real, fake):
         self._real = real
@@ -72,5 +75,12 @@ class Duo:
     def duo(self, tup):
         self._real, self._fake = tup
         self._to_reset = True
+
+    def __iter__(self):
+        return chain(self._real, self._fake)
+
+    def __len__(self):
+        return len(self._real) + len(self._fake)
+    
 
 
