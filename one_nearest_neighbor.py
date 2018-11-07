@@ -2,13 +2,14 @@ import os
 import tensorflow as tf
 import numpy as np
 from cnn.alexnet import AlexNet
-from tensorflow.contrib.data import Iterator
 from tensorflow.python.client.session import BaseSession
 from utils import make_list, get_init_op
 from datagenerator import ImageDataGenerator
 from scipy.spatial.distance import cdist
 from PIL.Image import Image
 from base import BaseScorer
+Iterator = tf.data.Iterator
+Dataset = tf.data.Dataset
 
 
 class NaiveOneNearestNeighborScorer(BaseScorer):
