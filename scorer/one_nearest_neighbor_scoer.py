@@ -15,12 +15,10 @@ class NaiveOneNearestNeighborScorer(StatsScorer):
         self._score = None
 
     def _set_latent(self):
-        if self._latent0 is None or self._latent1 is None:
-            self._set_latents()
-        if self._latent0.shape != self._latent1.shape:
-            raise ValueError("real and fake latents differ in shape {} != {}".format(self._latent0.shape,
-                                                                                     self._latent1.shape))
-        self._latent = np.concatenate([self._latent0, self._latent1])
+        latent0, latent1 = self.latent_duo.duo
+        if latent0.shape != latent1.shape:
+            raise ValueError("real and fake latents differ in shape {} != {}".format(latent0.shape, latent1.shape))
+        self._latent = np.concatenate([latent0, latent1])
 
     @property
     def latent(self):
