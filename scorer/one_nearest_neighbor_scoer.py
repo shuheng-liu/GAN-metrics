@@ -3,37 +3,16 @@ import numpy as np
 from cnn.alexnet import AlexNet
 from tensorflow.python.client.session import BaseSession
 from scipy.spatial.distance import cdist
-from PIL.Image import Image
-from base import BaseScorer
+from .stats_scorer import StatsScorer
 
 
-class NaiveOneNearestNeighborScorer(BaseScorer):
+class NaiveOneNearestNeighborScorer(StatsScorer):
     def __init__(self, images_real, images_fake):
         super(NaiveOneNearestNeighborScorer, self).__init__(images_real, images_fake)
         self._latent = None
         self._pair_dist = None
         self._argmin = None
         self._score = None
-
-    @classmethod
-    def _convert_to_array(cls, images):
-        if isinstance(images, np.ndarray):
-            return images
-        elif isinstance(images, (list, tuple)):
-            try:
-                if isinstance(images[0], Image):
-                    return np.stack(np.asarray(img) for img in images)
-                else:
-                    return np.stack(images)
-            except IndexError as e:
-                print("check that `images` of {} is not empty".format(cls.__name__))
-                raise e
-        else:
-            raise TypeError("unsupported input format {}".format(type(images)))
-
-    @staticmethod
-    def _flatten(array):
-        return np.reshape(array, [len(array), -1])
 
     def _set_latent(self):
         latent0 = self._flatten(self._convert_to_array(self._images0))
