@@ -1,45 +1,48 @@
-import os
 import tensorflow as tf
 import numpy as np
 from cnn.alexnet import AlexNet
-from tensorflow.contrib.data import Iterator
 from tensorflow.python.client.session import BaseSession
-from utils import make_list, get_init_op
-from datagenerator import ImageDataGenerator
 from scipy.spatial.distance import cdist
+from PIL.Image import Image
+from base import BaseScorer
 
 
-class NaiveOneNearestNeighborScorer:
-    def __init__(self, folder_real, folder_generated, session: BaseSession, dir_for_list):
-        self.folder0 = folder_real
-        self.folder1 = folder_generated
-        self.session = session
-        self.dir_for_list = dir_for_list
-        self._make_dir_for_list()
+class NaiveOneNearestNeighborScorer(BaseScorer):
+    def __init__(self, images_real, images_fake):
+        super(NaiveOneNearestNeighborScorer, self).__init__()
+        self._images0 = images_fake
+        self._images1 = images_real
         self._latent = None
         self._pair_dist = None
         self._argmin = None
         self._score = None
 
-    def _make_dir_for_list(self):
-        try:
-            os.makedirs(self.dir_for_list)
-        except FileExistsError as e:
-            print(e)
-            print("abort making dir")
+    @classmethod
+    def _convert_to_array(cls, images):
+        if isinstance(images, np.ndarray):
+            return images
+        elif isinstance(images, (list, tuple)):
+            try:
+                if isinstance(images[0], Image):
+                    return np.stack(np.asarray(img) for img in images)
+                else:
+                    return np.stack(images)
+            except IndexError as e:
+                print("check that `images` of {} is not empty".format(cls.__name__))
+                raise e
+        else:
+            raise TypeError("unsupported input format {}".format(type(images)))
+
+    @staticmethod
+    def _flatten(array):
+        return np.reshape(array, [len(array), -1])
 
     def _set_latent(self):
-        txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dir_for_list)
-        print(txt_path, length)
-        data = ImageDataGenerator(txt_path, 'inference', length, 2, shuffle=False)  # Do not shuffle the dataset
-        iterator = Iterator.from_structure(data.data.output_types, data.data.output_shapes)  # type: Iterator
-        next_batch = iterator.get_next()
-        init_op = get_init_op(iterator, data)
-
-        self.session.run(init_op)
-        image_batch, label_batch = self.session.run(next_batch)
-        # reshape the latent numpy array
-        self._latent = np.reshape(image_batch, [image_batch.shape[0], -1])
+        latent0 = self._flatten(self._convert_to_array(self._images0))
+        latent1 = self._flatten(self._convert_to_array(self._images1))
+        if latent0.shape != latent1.shape:
+            raise ValueError("real and fake latents differ in shape {} != {}".format(latent0.shape, latent1.shape))
+        self._latent = np.concatenate([latent0, latent1])
 
     @property
     def latent(self):
@@ -85,29 +88,35 @@ class NaiveOneNearestNeighborScorer:
 
 
 class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
-    def __int__(self, folder_real, folder_generated, session: BaseSession, dir_for_list, alexnet=None):
-        NaiveOneNearestNeighborScorer.__init__(self, folder_real, folder_generated, session, dir_for_list)
+    def __int__(self, images_real, images_fake, session: BaseSession, dir_for_list, alexnet=None):
+        NaiveOneNearestNeighborScorer.__init__(self, images_real, images_fake)
+        self.session = session
         if alexnet is None:
             self._alexnet = None  # declare field in constructor to avoid warnings
             self._set_default_alexnet()
         else:
             self._alexnet = alexnet
+        self._tf_init()
+
+    def _tf_init(self):
+        self.session.run(tf.global_variables_initializer())
 
     def _set_latent(self):
-        txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dir_for_list)
-        print(txt_path, length)
-        data = ImageDataGenerator(txt_path, 'inference', length, 2, shuffle=False)  # Do not shuffle the dataset
-        iterator = Iterator.from_structure(data.data.output_types, data.data.output_shapes)  # type: Iterator
-        next_batch = iterator.get_next()
-        init_op = get_init_op(iterator, data)
+        # equivalent to setting the initial values for self._latent
+        NaiveOneNearestNeighborScorer._set_latent(self)
+        # self._latent = some_input_images in np.array format
 
-        # get the latent_tsr representation of each sample
-        latent_tsr = alexnet.flattened
-        keep_prob = 1.0
+        # grab the latent_tsr representation of each sample
+        latent_tsr = self._alexnet.flattened
 
-        self.session.run(init_op)
-        image_batch, label_batch = self.session.run(next_batch)
-        self._latent = self.session.run(latent_tsr, feed_dict={x_tsr: image_batch, keep_prob_tsr: keep_prob})
+        self._latent = self.session.run(
+            latent_tsr,
+            feed_dict={
+                self._alexnet.X: self._latent,
+                self._alexnet.KEEP_PROB: 1.0,
+            }
+        )
+        self._latent = self._flatten(self._latent)
 
     def _set_default_alexnet(self):
         x_tsr = tf.placeholder(tf.float32, [None, 227, 227, 3])
