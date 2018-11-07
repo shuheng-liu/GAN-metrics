@@ -93,9 +93,7 @@ class NaiveOneNearestNeighborScorer(BaseScorer):
 class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
     def __int__(self, images_real, images_fake, session: BaseSession, dir_for_list, alexnet=None):
         NaiveOneNearestNeighborScorer.__init__(self, images_real, images_fake)
-        self.dir_for_list = dir_for_list
         self.session = session
-        self._make_dir_for_list()
         if alexnet is None:
             self._alexnet = None  # declare field in constructor to avoid warnings
             self._set_default_alexnet()
@@ -105,13 +103,6 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
 
     def _tf_init(self):
         self.session.run(tf.global_variables_initializer())
-
-    def _make_dir_for_list(self):
-        try:
-            os.makedirs(self.dir_for_list)
-        except FileExistsError as e:
-            print(e)
-            print("abort making dir")
 
     def _set_latent(self):
         # equivalent to setting the initial values for self._latent
