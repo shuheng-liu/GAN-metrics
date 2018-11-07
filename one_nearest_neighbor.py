@@ -12,8 +12,7 @@ from base import BaseScorer
 
 
 class NaiveOneNearestNeighborScorer(BaseScorer):
-    def __init__(self, images_real, images_fake, dir_for_list):
-        self.dir_for_list = dir_for_list
+    def __init__(self, images_real, images_fake):
         self._images0 = images_fake
         self._images1 = images_real
         self._latent = None
@@ -88,8 +87,10 @@ class NaiveOneNearestNeighborScorer(BaseScorer):
 
 
 class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
-    def __int__(self, folder_real, folder_generated, session: BaseSession, dir_for_list, alexnet=None):
-        NaiveOneNearestNeighborScorer.__init__(self, folder_real, folder_generated, session, dir_for_list)
+    def __int__(self, images_real, images_fake, session: BaseSession, dir_for_list, alexnet=None):
+        NaiveOneNearestNeighborScorer.__init__(self, images_real, images_fake)
+        self.dir_for_list = dir_for_list
+        self.session = session
         self._make_dir_for_list()
         if alexnet is None:
             self._alexnet = None  # declare field in constructor to avoid warnings
