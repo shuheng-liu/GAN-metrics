@@ -14,6 +14,7 @@ Dataset = tf.data.Dataset
 
 class NaiveOneNearestNeighborScorer(BaseScorer):
     def __init__(self, images_real, images_fake):
+        super(NaiveOneNearestNeighborScorer, self).__init__()
         self._images0 = images_fake
         self._images1 = images_real
         self._latent = None
