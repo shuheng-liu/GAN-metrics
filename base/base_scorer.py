@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class BaseScorer(ABC):
     @abstractmethod
-    def __init__(self):
+    def __init__(self, images_real, images_fake):
         pass
 
     @property
