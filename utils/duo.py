@@ -2,7 +2,7 @@ from itertools import chain
 
 
 class Duo:
-    def __init__(self, real, fake):
+    def __init__(self, real=None, fake=None):
         self._real = real
         self._fake = fake
         self._delta = None
