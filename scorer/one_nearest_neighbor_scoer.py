@@ -3,57 +3,33 @@ import numpy as np
 from cnn.alexnet import AlexNet
 from tensorflow.python.client.session import BaseSession
 from scipy.spatial.distance import cdist
-from PIL.Image import Image
-from base import BaseScorer
+from .stats_scorer import StatsScorer
 
 
-class NaiveOneNearestNeighborScorer(BaseScorer):
+class NaiveOneNearestNeighborScorer(StatsScorer):
     def __init__(self, images_real, images_fake):
-        super(NaiveOneNearestNeighborScorer, self).__init__()
-        self._images0 = images_fake
-        self._images1 = images_real
-        self._latent = None
+        super(NaiveOneNearestNeighborScorer, self).__init__(images_real, images_fake)
+        self._latent_concat = None
         self._pair_dist = None
         self._argmin = None
         self._score = None
 
-    @classmethod
-    def _convert_to_array(cls, images):
-        if isinstance(images, np.ndarray):
-            return images
-        elif isinstance(images, (list, tuple)):
-            try:
-                if isinstance(images[0], Image):
-                    return np.stack(np.asarray(img) for img in images)
-                else:
-                    return np.stack(images)
-            except IndexError as e:
-                print("check that `images` of {} is not empty".format(cls.__name__))
-                raise e
-        else:
-            raise TypeError("unsupported input format {}".format(type(images)))
-
-    @staticmethod
-    def _flatten(array):
-        return np.reshape(array, [len(array), -1])
-
-    def _set_latent(self):
-        latent0 = self._flatten(self._convert_to_array(self._images0))
-        latent1 = self._flatten(self._convert_to_array(self._images1))
+    def _set_latent_concat(self):
+        latent0, latent1 = self.latent_duo.duo
         if latent0.shape != latent1.shape:
             raise ValueError("real and fake latents differ in shape {} != {}".format(latent0.shape, latent1.shape))
-        self._latent = np.concatenate([latent0, latent1])
+        self._latent_concat = np.concatenate([latent0, latent1])
 
     @property
-    def latent(self):
-        if self._latent is None:
-            self._set_latent()
-        return self._latent
+    def latent_concat(self):
+        if self._latent_concat is None:
+            self._set_latent_concat()
+        return self._latent_concat
 
     def _set_pair_dist(self):
-        if self._latent is None:
-            self._set_latent()
-        self._pair_dist = cdist(self._latent, self._latent, metric="euclidean")
+        if self._latent_concat is None:
+            self._set_latent_concat()
+        self._pair_dist = cdist(self._latent_concat, self._latent_concat, metric="euclidean")
         np.fill_diagonal(self._pair_dist, np.inf)
 
     @property
@@ -103,7 +79,7 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
 
     def _set_latent(self):
         # equivalent to setting the initial values for self._latent
-        NaiveOneNearestNeighborScorer._set_latent(self)
+        NaiveOneNearestNeighborScorer._set_latent_concat(self)
         # self._latent = some_input_images in np.array format
 
         # TODO allow for specifying which latent layer to use, default using `flattened`, i.e., the layer after conv5
@@ -137,15 +113,15 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
         return self._alexnet
 
 
-if __name__ == '__main__':
-    x_tsr = tf.placeholder(tf.float32, [None, 227, 227, 3])
-    keep_prob_tsr = tf.placeholder(tf.float32, tuple())
-    num_classes = 2
-    train_layers = ['fc8']
-    alexnet = AlexNet(x_tsr, keep_prob_tsr, num_classes, train_layers)
-    sess = tf.InteractiveSession()
-    sess.run(tf.global_variables_initializer())
-    alexnet.load_model_pretrained(sess)
-
-    real_folder = "images/real-images/"
-    reuse = True
+# if __name__ == '__main__':
+    # x_tsr = tf.placeholder(tf.float32, [None, 227, 227, 3])
+    # keep_prob_tsr = tf.placeholder(tf.float32, tuple())
+    # num_classes = 2
+    # train_layers = ['fc8']
+    # alexnet = AlexNet(x_tsr, keep_prob_tsr, num_classes, train_layers)
+    # sess = tf.InteractiveSession()
+    # sess.run(tf.global_variables_initializer())
+    # alexnet.load_model_pretrained(sess)
+    #
+    # real_folder = "images/real-images/"
+    # reuse = True

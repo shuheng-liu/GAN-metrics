@@ -1,3 +1,6 @@
+from itertools import chain
+
+
 class Trio:
     """structured data containing real-fake0-fake1 trios; can be trio of any object or data"""
 
@@ -81,7 +84,7 @@ class Trio:
 
     @property
     def trio(self):
-        return self._real, self.fake0, self.fake1
+        return self._real, self._fake0, self._fake1
 
     @real.setter
     def real(self, real):
@@ -108,10 +111,15 @@ class Trio:
         self._to_reset = value
 
     def __iter__(self):
-        return iter([self._real, self._fake0, self._fake1])
+        return chain(self._real, self._fake0, self._fake1)
 
     def __len__(self):
-        return 3
+        try:
+            return len(self._real) + len(self._fake0) + len(self._fake1)
+        except TypeError as e:
+            print(e)
+            print("falling back to default length 0 for {}".format(self))
+            return 0
 
     def __str__(self):
         return "Trio(real={}, fake0={}, fake1={})".format(self._real, self._fake0, self.fake1)
