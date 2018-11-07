@@ -80,7 +80,11 @@ class Duo:
         return chain(self._real, self._fake)
 
     def __len__(self):
-        return len(self._real) + len(self._fake)
+        try:
+            return len(self._real) + len(self._fake)
+        except TypeError as e:
+            print(e)
+            return 0
     
 
 
