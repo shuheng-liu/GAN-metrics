@@ -7,39 +7,32 @@ from tensorflow.python.client.session import BaseSession
 from utils import make_list, get_init_op
 from datagenerator import ImageDataGenerator
 from scipy.spatial.distance import cdist
+from PIL.Image import Image
 
 
 class NaiveOneNearestNeighborScorer:
-    def __init__(self, folder_real, folder_generated, session: BaseSession, dir_for_list):
-        self.folder0 = folder_real
-        self.folder1 = folder_generated
-        self.session = session
+    def __init__(self, images, dir_for_list):
         self.dir_for_list = dir_for_list
-        self._make_dir_for_list()
+        self._images = images
         self._latent = None
         self._pair_dist = None
         self._argmin = None
         self._score = None
 
-    def _make_dir_for_list(self):
-        try:
-            os.makedirs(self.dir_for_list)
-        except FileExistsError as e:
-            print(e)
-            print("abort making dir")
-
     def _set_latent(self):
-        txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dir_for_list)
-        print(txt_path, length)
-        data = ImageDataGenerator(txt_path, 'inference', length, 2, shuffle=False)  # Do not shuffle the dataset
-        iterator = Iterator.from_structure(data.data.output_types, data.data.output_shapes)  # type: Iterator
-        next_batch = iterator.get_next()
-        init_op = get_init_op(iterator, data)
-
-        self.session.run(init_op)
-        image_batch, label_batch = self.session.run(next_batch)
-        # reshape the latent numpy array
-        self._latent = np.reshape(image_batch, [image_batch.shape[0], -1])
+        if isinstance(self._images, np.ndarray):
+            self._latent = np.reshape(self._images, [len(self._images), -1])
+        elif isinstance(self._images, (list, tuple)):
+            try:
+                if isinstance(self._images[0], Image):
+                    self._latent = np.stack(np.reshape(np.asarray(img), -1) for img in self._images)
+                else:
+                    self._latent = np.stack(np.reshape(img, -1) for img in self._images)
+            except IndexError as e:
+                print("check that `images` of {} is not empty".format(self.__class__.__name__))
+                raise e
+        else:
+            raise TypeError("unsupported input format {}".format(type(self._images)))
 
     @property
     def latent(self):
@@ -87,11 +80,19 @@ class NaiveOneNearestNeighborScorer:
 class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
     def __int__(self, folder_real, folder_generated, session: BaseSession, dir_for_list, alexnet=None):
         NaiveOneNearestNeighborScorer.__init__(self, folder_real, folder_generated, session, dir_for_list)
+        self._make_dir_for_list()
         if alexnet is None:
             self._alexnet = None  # declare field in constructor to avoid warnings
             self._set_default_alexnet()
         else:
             self._alexnet = alexnet
+
+    def _make_dir_for_list(self):
+        try:
+            os.makedirs(self.dir_for_list)
+        except FileExistsError as e:
+            print(e)
+            print("abort making dir")
 
     def _set_latent(self):
         txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dir_for_list)
