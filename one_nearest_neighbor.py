@@ -23,24 +23,28 @@ class NaiveOneNearestNeighborScorer(BaseScorer):
         self._score = None
 
     @classmethod
-    def _convert_latent(cls, images):
+    def _convert_to_array(cls, images):
         if isinstance(images, np.ndarray):
-            return np.reshape(images, [len(images), -1])
+            return images
         elif isinstance(images, (list, tuple)):
             try:
                 if isinstance(images[0], Image):
-                    return np.stack(np.reshape(np.asarray(img), -1) for img in images)
+                    return np.stack(np.asarray(img) for img in images)
                 else:
-                    return np.stack(np.reshape(img, -1) for img in images)
+                    return np.stack(images)
             except IndexError as e:
                 print("check that `images` of {} is not empty".format(cls.__name__))
                 raise e
         else:
             raise TypeError("unsupported input format {}".format(type(images)))
 
+    @staticmethod
+    def _flatten(cls, array):
+        return np.reshape(array, [len(array), -1])
+
     def _set_latent(self):
-        latent0 = self._convert_latent(self._images0)
-        latent1 = self._convert_latent(self._images1)
+        latent0 = self._flatten(self._convert_to_array(self._images0))
+        latent1 = self._flatten(self._convert_to_array(self._images1))
         if latent0.shape != latent1.shape:
             raise ValueError("real and fake latents differ in shape {} != {}".format(latent0.shape, latent1.shape))
         self._latent = np.concatenate([latent0, latent1])
