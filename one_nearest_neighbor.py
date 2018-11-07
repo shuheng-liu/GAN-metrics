@@ -39,7 +39,7 @@ class NaiveOneNearestNeighborScorer(BaseScorer):
             raise TypeError("unsupported input format {}".format(type(images)))
 
     @staticmethod
-    def _flatten(cls, array):
+    def _flatten(array):
         return np.reshape(array, [len(array), -1])
 
     def _set_latent(self):
