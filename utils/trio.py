@@ -1,3 +1,6 @@
+from itertools import chain
+
+
 class Trio:
     """structured data containing real-fake0-fake1 trios; can be trio of any object or data"""
 
@@ -108,7 +111,7 @@ class Trio:
         self._to_reset = value
 
     def __iter__(self):
-        return iter([self._real, self._fake0, self._fake1])
+        return chain(self._real, self._fake0, self._fake1)
 
     def __len__(self):
         try:
