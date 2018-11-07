@@ -8,8 +8,6 @@ from datagenerator import ImageDataGenerator
 from scipy.spatial.distance import cdist
 from PIL.Image import Image
 from base import BaseScorer
-Iterator = tf.data.Iterator
-Dataset = tf.data.Dataset
 
 
 class NaiveOneNearestNeighborScorer(BaseScorer):
@@ -116,20 +114,21 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
             print("abort making dir")
 
     def _set_latent(self):
-        txt_path, length = make_list([self.folder1, self.folder0], [1, 0], [-1, -1], 'val', self.dir_for_list)
-        print(txt_path, length)
-        data = ImageDataGenerator(txt_path, 'inference', length, 2, shuffle=False)  # Do not shuffle the dataset
-        iterator = Iterator.from_structure(data.data.output_types, data.data.output_shapes)  # type: Iterator
-        next_batch = iterator.get_next()
-        init_op = get_init_op(iterator, data)
+        # equivalent to setting the initial values for self._latent
+        NaiveOneNearestNeighborScorer._set_latent(self)
+        # self._latent = some_input_images in np.array format
 
-        # get the latent_tsr representation of each sample
-        latent_tsr = alexnet.flattened
-        keep_prob = 1.0
+        # grab the latent_tsr representation of each sample
+        latent_tsr = self._alexnet.flattened
 
-        self.session.run(init_op)
-        image_batch, label_batch = self.session.run(next_batch)
-        self._latent = self.session.run(latent_tsr, feed_dict={x_tsr: image_batch, keep_prob_tsr: keep_prob})
+        self._latent = self.session.run(
+            latent_tsr,
+            feed_dict={
+                self._alexnet.X: self._latent,
+                self._alexnet.KEEP_PROB: 1.0,
+            }
+        )
+        self._latent = self._flatten(self._latent)
 
     def _set_default_alexnet(self):
         x_tsr = tf.placeholder(tf.float32, [None, 227, 227, 3])
