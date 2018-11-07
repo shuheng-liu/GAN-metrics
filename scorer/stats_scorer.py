@@ -37,5 +37,5 @@ class StatsScorer(BaseScorer):
     @property
     def latent_duo(self):
         if self.latent_duo is None:
-            self._set_latents()
+            self._set_latent_duo()
         return self._latent_duo
