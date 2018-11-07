@@ -6,6 +6,8 @@ from PIL.Image import Image
 class StatsScorer(BaseScorer):
     def __init__(self, images_real, images_fake):
         super(StatsScorer, self).__init__(images_real, images_fake)
+        self._latent1 = None
+        self._latent0 = None
 
     @classmethod
     def _convert_to_array(cls, images):
@@ -27,5 +29,13 @@ class StatsScorer(BaseScorer):
     def _flatten(array):
         return np.reshape(array, [len(array), -1])
 
+    def _set_latents(self):
+        self._latent0 = self._flatten(self._convert_to_array(self._images0))
+        self._latent1 = self._flatten(self._convert_to_array(self._images1))
 
+    @property
+    def latents(self):
+        if self._latent0 is None or self._latent1 is None:
+            self._set_latents()
+        return self._latent1, self._latent0
 
