@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 class BaseScorer(ABC):
     @abstractmethod
     def __init__(self, images_real, images_fake):
-        pass
+        self._images0 = images_fake
+        self._images1 = images_real
 
     @property
     @abstractmethod
