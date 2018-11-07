@@ -62,3 +62,13 @@ class Duo:
             print("Warning: manually overriding resetting procedure")
         self._to_reset = value
 
+    @property
+    def duo(self):
+        return self._real, self._fake
+
+    @duo.setter
+    def duo(self, tup):
+        self._real, self._fake = tup
+        self._to_reset = True
+
+
