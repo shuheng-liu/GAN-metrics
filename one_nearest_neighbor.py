@@ -103,6 +103,10 @@ class AlexNetOneNearestNeighborScorer(NaiveOneNearestNeighborScorer):
             self._set_default_alexnet()
         else:
             self._alexnet = alexnet
+        self._tf_init()
+
+    def _tf_init(self):
+        self.session.run(tf.global_variables_initializer())
 
     def _make_dir_for_list(self):
         try:
