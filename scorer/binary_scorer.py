@@ -1,5 +1,4 @@
-from abc import ABC, abstractmethod
-from .base_scorer import BaseScorer
+from base import BaseScorer
 
 
 class BaseBinaryScorer:
