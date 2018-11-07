@@ -1,7 +1,7 @@
 from base import BaseScorer
 
 
-class BaseBinaryScorer:
+class BinaryScorer:
     def __init__(self, scorer1: BaseScorer, scorer2: BaseScorer):
         self.scorer1 = scorer1
         self.scorer2 = scorer2
