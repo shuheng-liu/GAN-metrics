@@ -16,16 +16,39 @@ class Duo:
 
     @real.setter
     def real(self, real):
+        self._to_reset = True
         self._real = real
 
     @fake.setter
     def fake(self, fake):
+        self._to_reset = True
         self._fake = fake
 
     @property
     def delta(self):
+        if self._to_reset:
+            self._set_delta()
         return self._delta
 
     @property
     def abs_delta(self):
+        if self._to_reset:
+            self._set_abs_delta()
         return self._abs_delta
+
+    def _set_delta(self):
+        try:
+            self._delta = self._real - self._fake
+        except ValueError as e:
+            print(e)
+            self._delta = None
+            print("assigning `delta` of {} to {}".format(self, self._delta))
+
+    def _set_abs_delta(self):
+        try:
+            self._abs_delta = abs(self._delta)
+        except ValueError as e:
+            print(e)
+            self._abs_delta = None
+            print("assigning `abs_delta` of {} to {}".format(self, self._abs_delta))
+
