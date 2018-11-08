@@ -76,13 +76,16 @@ class Duo:
         self._real, self._fake = tup
         self._to_reset = True
 
-    def apply(self, func):
-        self._real = func(self._real)
-        self._fake = func(self._fake)
+    def apply(self, func, *args, **kwargs):
+        self._real = func(self._real, *args, **kwargs)
+        self._fake = func(self._fake, *args, **kwargs)
         self._to_reset = True
 
-    def copy_apply(self, func):
-        return Duo(func(self._real), func(self._fake))
+    def copy_apply(self, func, *args, **kwargs):
+        return Duo(
+            real=func(self._real, *args, **kwargs),
+            fake=func(self._fake, *args, **kwargs)
+        )
 
     def __iter__(self):
         return chain(self._real, self._fake)
@@ -99,7 +102,3 @@ class Duo:
 
     def __repr__(self):
         return "<" + str(self) + " at {}>".format(id(self))
-
-    
-
-
