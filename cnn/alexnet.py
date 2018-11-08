@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from .base import BaseModel
+from base import BaseModel
 from .basic_layers import conv, dropout, fc, lrn, max_pool
 
 

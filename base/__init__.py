@@ -1,7 +1,7 @@
 from .base_scorer import BaseScorer
-from .base_binary_scorer import BaseBinaryScorer
+from .base_cnn import BaseModel
 
 __all__ = [
     BaseScorer,
-    BaseBinaryScorer,
+    BaseModel,
 ]

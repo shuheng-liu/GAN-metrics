@@ -1,5 +1,5 @@
 import tensorflow as tf
-from .base import BaseModel
+from base import BaseModel
 from .alexnet import AlexNet
 
 
