@@ -110,6 +110,15 @@ class Trio:
     def to_reset(self, value):
         self._to_reset = value
 
+    def apply(self, func):
+        self._real = func(self._real)
+        self._fake0 = func(self._fake0)
+        self._fake1 = func(self._fake1)
+        self._to_reset = True
+
+    def copy_apply(self, func):
+        return Trio(func(self._real), func(self._fake0), func(self._fake1))
+
     def __iter__(self):
         return chain(self._real, self._fake0, self._fake1)
 
