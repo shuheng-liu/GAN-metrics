@@ -39,3 +39,17 @@ class StatsScorer(BaseScorer):
         if self.latent_duo is None:
             self._set_latent_duo()
         return self._latent_duo
+
+    @property
+    def mean(self):
+        if self._latent_duo is None:
+            self._set_latent_duo()
+        pixel_mean = self._latent_duo.copy_apply(np.mean, axis=0)  # mean computed on each pixel throughout batch
+        return np.sum(pixel_mean.abs_delta)
+
+    @property
+    def std(self):
+        if self._latent_duo is None:
+            self._set_latent_duo()
+        pixel_std = self._latent_duo.copy_apply(np.std, axis=0)  # std computed on each pixel throughout batch
+        return np.sum(pixel_std.abs_delta)
