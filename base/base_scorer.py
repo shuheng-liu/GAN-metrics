@@ -6,6 +6,7 @@ class BaseScorer(ABC):
     def __init__(self, images_real, images_fake):
         self._images0 = images_fake
         self._images1 = images_real
+        self._score = None
 
     @property
     @abstractmethod
@@ -14,4 +15,4 @@ class BaseScorer(ABC):
         returns the score of one GAN computed against ground truths
         :rtype: float
         """
-        pass
+        return None

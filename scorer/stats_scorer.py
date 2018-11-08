@@ -2,12 +2,15 @@ from base import BaseScorer
 from utils import Duo
 import numpy as np
 from PIL.Image import Image
+from stats import MeanStdStats
 
 
 class StatsScorer(BaseScorer):
     def __init__(self, images_real, images_fake):
         super(StatsScorer, self).__init__(images_real, images_fake)
         self._latent_duo = Duo()
+        self._mean = None
+        self._std = None
 
     @classmethod
     def _convert_to_array(cls, images):
@@ -30,8 +33,8 @@ class StatsScorer(BaseScorer):
         return np.reshape(array, [len(array), -1])
 
     def _set_latent_duo(self):
-        latent0 = self._flatten(self._convert_to_array(self._images0))
-        latent1 = self._flatten(self._convert_to_array(self._images1))
+        latent0 = self._flatten(self._convert_to_array(self._images0))  # n_images * n_channels array
+        latent1 = self._flatten(self._convert_to_array(self._images1))  # n_images * n_channels array
         self._latent_duo = Duo(real=latent1, fake=latent0)
 
     @property
@@ -39,3 +42,52 @@ class StatsScorer(BaseScorer):
         if self.latent_duo is None:
             self._set_latent_duo()
         return self._latent_duo
+
+    def _set_mean(self):
+        if self._latent_duo is None:
+            self._set_latent_duo()
+        pixel_mean = self._latent_duo.copy_apply(np.mean, axis=0)  # mean computed on each pixel throughout batch
+        self._mean = np.sum(pixel_mean.abs_delta)
+
+    @property
+    def mean(self):
+        if self._mean is None:
+            self._set_mean()
+        return self._mean
+
+    def _set_std(self):
+        if self._latent_duo is None:
+            self._set_latent_duo()
+        pixel_std = self._latent_duo.copy_apply(np.std, axis=0)  # std computed on each pixel throughout batch
+        self._std = np.sum(pixel_std.abs_delta)
+
+    @property
+    def std(self):
+        if self._std is None:
+            self._set_std()
+        return self._std
+
+    def _set_score(self):
+        self._score = MeanStdStats(
+            mean=self.mean,
+            std=self.std,
+            sample_size=self.latent_duo.real.shape[1],
+        )
+
+    @property
+    def score(self):
+        if self._score is None:
+            self._set_score()
+        return self._score
+
+
+class MeanScorer(StatsScorer):
+    @property
+    def score(self):
+        return self.mean
+
+
+class StdScorer(StatsScorer):
+    @property
+    def score(self):
+        return self.std
