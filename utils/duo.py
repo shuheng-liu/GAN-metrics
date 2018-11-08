@@ -76,6 +76,14 @@ class Duo:
         self._real, self._fake = tup
         self._to_reset = True
 
+    def apply(self, func):
+        self._real = func(self.real)
+        self._fake = func(self.fake)
+        self._to_reset = True
+
+    def copy_apply(self, func):
+        return Duo(func(self._real), func(self._fake))
+
     def __iter__(self):
         return chain(self._real, self._fake)
 
