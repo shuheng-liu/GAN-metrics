@@ -9,6 +9,7 @@ class StatsScorer(BaseScorer):
         super(StatsScorer, self).__init__(images_real, images_fake)
         self._latent_duo = Duo()
         self._mean = None
+        self._std = None
 
     @classmethod
     def _convert_to_array(cls, images):
@@ -47,16 +48,20 @@ class StatsScorer(BaseScorer):
         pixel_mean = self._latent_duo.copy_apply(np.mean, axis=0)  # mean computed on each pixel throughout batch
         self._mean = np.sum(pixel_mean.abs_delta)
 
-
     @property
     def mean(self):
         if self._mean is None:
             self._set_mean()
         return self._mean
 
-    @property
-    def std(self):
+    def _set_std(self):
         if self._latent_duo is None:
             self._set_latent_duo()
         pixel_std = self._latent_duo.copy_apply(np.std, axis=0)  # std computed on each pixel throughout batch
-        return np.sum(pixel_std.abs_delta)
+        self._std = np.sum(pixel_std.abs_delta)
+
+    @property
+    def std(self):
+        if self._std is None:
+            self._set_std()
+        return self._std
