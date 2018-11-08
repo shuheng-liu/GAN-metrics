@@ -67,13 +67,18 @@ class StatsScorer(BaseScorer):
             self._set_std()
         return self._std
 
-    @property
-    def score(self):
-        return MeanStdStats(
+    def _set_score(self):
+        self._score = MeanStdStats(
             mean=self.mean,
             std=self.std,
             sample_size=self.latent_duo.real.shape[1],
         )
+
+    @property
+    def score(self):
+        if self._score is None:
+            self._set_score()
+        return self._score
 
 
 class MeanScorer(StatsScorer):
