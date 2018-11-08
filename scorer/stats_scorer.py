@@ -2,6 +2,7 @@ from base import BaseScorer
 from utils import Duo
 import numpy as np
 from PIL.Image import Image
+from stats import MeanStdStats
 
 
 class StatsScorer(BaseScorer):
@@ -65,3 +66,11 @@ class StatsScorer(BaseScorer):
         if self._std is None:
             self._set_std()
         return self._std
+
+    @property
+    def score(self):
+        return MeanStdStats(
+            mean=self.mean,
+            std=self.std,
+            sample_size=self.latent_duo.real.shape[1],
+        )
