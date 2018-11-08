@@ -30,8 +30,8 @@ class StatsScorer(BaseScorer):
         return np.reshape(array, [len(array), -1])
 
     def _set_latent_duo(self):
-        latent0 = self._flatten(self._convert_to_array(self._images0))
-        latent1 = self._flatten(self._convert_to_array(self._images1))
+        latent0 = self._flatten(self._convert_to_array(self._images0))  # n_images * n_channels array
+        latent1 = self._flatten(self._convert_to_array(self._images1))  # n_images * n_channels array
         self._latent_duo = Duo(real=latent1, fake=latent0)
 
     @property
