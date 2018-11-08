@@ -12,7 +12,6 @@ class NaiveOneNearestNeighborScorer(StatsScorer):
         self._latent_concat = None
         self._pair_dist = None
         self._argmin = None
-        self._score = None
 
     def _set_latent_concat(self):
         latent0, latent1 = self.latent_duo.duo
