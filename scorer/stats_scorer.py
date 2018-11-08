@@ -74,3 +74,15 @@ class StatsScorer(BaseScorer):
             std=self.std,
             sample_size=self.latent_duo.real.shape[1],
         )
+
+
+class MeanScorer(StatsScorer):
+    @property
+    def score(self):
+        return self.mean
+
+
+class StdScorer(StatsScorer):
+    @property
+    def score(self):
+        return self.std
