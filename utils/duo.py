@@ -77,8 +77,8 @@ class Duo:
         self._to_reset = True
 
     def apply(self, func):
-        self._real = func(self.real)
-        self._fake = func(self.fake)
+        self._real = func(self._real)
+        self._fake = func(self._fake)
         self._to_reset = True
 
     def copy_apply(self, func):
